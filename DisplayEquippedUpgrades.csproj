@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
-        <AssemblyName>MycopunkModTemplate</AssemblyName>
-        <Product>My first plugin</Product>
+        <AssemblyName>DisplayEquippedUpgrades</AssemblyName>
+        <Product>DisplayEquippedUpgrades</Product>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -11,7 +11,7 @@
             https://nuget.bepinex.dev/v3/index.json;
             https://nuget.samboy.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <RootNamespace>MycopunkModTemplate</RootNamespace>
+        <RootNamespace>DisplayEquippedUpgrades</RootNamespace>
 
         <!-- Git tags must strart with v -->
         <MinVerTagPrefix>v</MinVerTagPrefix>
@@ -53,9 +53,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!--      <Reference Include="Assembly-CSharp" Publicize="true">-->
-        <!--        <HintPath>Path/to/Assembly-CSharp.dll</HintPath>-->
-        <!--      </Reference>-->
+              <Reference Include="Assembly-CSharp" Publicize="true">
+                <HintPath>D:\Steam\steamapps\common\Mycopunk\Mycopunk_Data\Managed\Assembly-CSharp.dll</HintPath>
+              </Reference>
     </ItemGroup>
 
 

@@ -2,10 +2,10 @@
 schemaVersion = "0.0.1"
 
 [package]
-namespace = "TeamName"
-name = "PackageName"
-description = "Example mod description"
-websiteUrl = "https://github.com/funlennysub/MycopunkModTemplate"
+namespace = "molaiom"
+name = "DisplayEquippedUpgrades"
+description = "This is a mod for Mycopunk that makes equipped upgrades display differently in the upgrade screen."
+websiteUrl = "https://github.com/Molaiom/Mycopunk_DisplayEquippedUpgrades"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -17,8 +17,8 @@ readme = "README.md"
 outdir = "build"
 
 [[build.copy]]
-source = "bin/Release/net48/MycopunkModTemplate.dll"
-target = "BepInEx/plugins/MycopunkModTemplate.dll"
+source = "bin/Release/net48/DisplayEquippedUpgrades.dll"
+target = "BepInEx/plugins/DisplayEquippedUpgrades.dll"
 
 [[build.copy]]
 source = "CHANGELOG.md"
@@ -29,7 +29,7 @@ source = "LICENSE"
 target = "LICENSE"
 
 [publish]
-repository = "https://thunderstore.io"
+repository = "https://github.com/Molaiom/Mycopunk_DisplayEquippedUpgrades"
 communities = [ "mycopunk" ]
 
 [publish.categories]

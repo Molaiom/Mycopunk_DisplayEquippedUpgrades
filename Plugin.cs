@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 
-namespace MycopunkModTemplate;
+namespace DisplayEquippedUpgrades;
 
 [MycoMod(null, ModFlags.IsClientSide)]
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
