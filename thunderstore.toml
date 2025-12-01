@@ -2,7 +2,7 @@
 schemaVersion = "1.0.0"
 
 [package]
-namespace = "DisplayEquippedUpgrades"
+namespace = "Molaiom"
 name = "DisplayEquippedUpgrades"
 description = "This is a mod for Mycopunk that makes equipped upgrades display differently in the upgrade screen."
 websiteUrl = "https://github.com/Molaiom/Mycopunk_DisplayEquippedUpgrades"
@@ -29,10 +29,10 @@ source = "LICENSE"
 target = "LICENSE"
 
 [publish]
-repository = "https://github.com/Molaiom/Mycopunk_DisplayEquippedUpgrades"
+repository = "https://thunderstore.io"
 communities = [ "mycopunk" ]
 
 [publish.categories]
-mycopunk = [ "client" ]
+mycopunk = [ "qol" ]
 
 
