@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Reflection;
-using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using static PlayerData;
 
 namespace DisplayEquippedUpgrades;
 
@@ -19,11 +16,13 @@ public class Plugin : BaseUnityPlugin
 
     private void Awake()
     {
+        ///Plugin setup
         Logger = base.Logger;
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
         Harmony.CreateAndPatchAll(typeof(DisplayEquippedUpgrades.Plugin));
     }
 
+    ///<summary>Happens when the player opens the equipment menu of a weapon/grenade or character</summary>
     [HarmonyPatch(typeof(GearUpgradeUI), nameof(GearUpgradeUI.SetUpgrade))]
     [HarmonyPrefix]
     public static void GearUpgradeUISetUpgrade(ref bool __runOriginal, ref UpgradeInstance upgrade, GearUpgradeUI __instance)
@@ -32,16 +31,14 @@ public class Plugin : BaseUnityPlugin
 
         try
         {
-            Logger.LogInfo($"Upgrade: [{upgrade.Upgrade.name}] Gear: [{upgrade.Gear}] Id: [{upgrade.upgradeID}]");
-
+            //If the upgrade is equipped
             if (PlayerData.GetGearData(__instance.transform.GetComponentInParent<GearDetailsWindow>().UpgradablePrefab).IsUpgradeEquipped(upgrade))
             {
-                Logger.LogInfo(" is equipped");
                 TryCreateImage(__instance.transform);
             }
+            //If the upgrade is not equipped
             else
             {
-                Logger.LogInfo(" is NOT equipped");
                 TryHideImage(__instance.transform);
             }
         }
@@ -51,6 +48,7 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
+    ///<summary>Happens when an upgrade is equipped</summary>
     [HarmonyPatch(typeof(GearDetailsWindow), nameof(GearDetailsWindow.EquipUpgrade))]
     [HarmonyPostfix]
     public static void GearDetailsWindowEquipUpgrade(ref bool __runOriginal, ref UpgradeInstance upgrade, GearDetailsWindow __instance)
@@ -59,11 +57,19 @@ public class Plugin : BaseUnityPlugin
 
         try
         {
-            __instance.transform.GetComponentInChildren<GearUpgradeUI>().SetUpgrade(upgrade);
+            foreach (var gearUpgradeUI in __instance.transform.GetComponentsInChildren<GearUpgradeUI>())
+            {
+                if (gearUpgradeUI.Upgrade == upgrade)
+                {
+                    TryCreateImage(gearUpgradeUI.transform);
+                    return;
+                }
+            }
         }
         catch { }
     }
 
+    ///<summary>Happens when an upgrade is unequipped</summary>
     [HarmonyPatch(typeof(GearDetailsWindow), nameof(GearDetailsWindow.UnequipUpgrade))]
     [HarmonyPostfix]
     public static void GearDetailsWindowUnequipUpgrade(ref bool __runOriginal, ref UpgradeInstance upgrade, GearDetailsWindow __instance)
@@ -72,7 +78,14 @@ public class Plugin : BaseUnityPlugin
 
         try
         {
-            __instance.transform.GetComponentInChildren<GearUpgradeUI>().SetUpgrade(upgrade);
+            foreach (var gearUpgradeUI in __instance.transform.GetComponentsInChildren<GearUpgradeUI>())
+            {
+                if (gearUpgradeUI.Upgrade == upgrade)
+                {
+                    TryHideImage(gearUpgradeUI.transform);
+                    return;
+                }
+            }
         }
         catch { }
     }
@@ -80,12 +93,14 @@ public class Plugin : BaseUnityPlugin
     ///<summary>Creates an image that makes the upgrade icon darker</summary>
     static void TryCreateImage(Transform transform)
     {
+        //If there is already an image, simply re enable it
         if (GetModImageObj(transform).TryGetComponent(out Image image))
         {
             image.enabled = true;
             return;
         }
 
+        // If there is no image, create one
         image = Instantiate(new GameObject().AddComponent<Image>(), transform);
         image.gameObject.name = pluginImageName;
         image.rectTransform.anchoredPosition = Vector2.zero;
@@ -100,9 +115,11 @@ public class Plugin : BaseUnityPlugin
     ///<summary>Disables the image that makes the upgrade icon darker</summary>
     static void TryHideImage(Transform transform)
     {
+        // If there is no image, do nothing
         if (!GetModImageObj(transform).TryGetComponent(out Image image))
             return;
 
+        // If there is an image, disable it
         image.enabled = false;
     }
 
