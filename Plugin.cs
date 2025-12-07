@@ -2,8 +2,10 @@
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using Pigeon.UI;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace DisplayEquippedUpgrades;
 
@@ -12,7 +14,6 @@ namespace DisplayEquippedUpgrades;
 public class Plugin : BaseUnityPlugin
 {
     internal new static ManualLogSource Logger;
-    static string pluginImageName = "equippedUpgradeImgObj";
 
     private void Awake()
     {
@@ -22,30 +23,58 @@ public class Plugin : BaseUnityPlugin
         Harmony.CreateAndPatchAll(typeof(DisplayEquippedUpgrades.Plugin));
     }
 
-    ///<summary>Happens when the player opens the equipment menu of a weapon/grenade or character</summary>
+    ///<summary>Happens when the player opens the equipment menu of a gear or character</summary>
     [HarmonyPatch(typeof(GearUpgradeUI), nameof(GearUpgradeUI.SetUpgrade))]
-    [HarmonyPrefix]
-    public static void GearUpgradeUISetUpgrade(ref bool __runOriginal, ref UpgradeInstance upgrade, GearUpgradeUI __instance)
+    [HarmonyPostfix]
+    public static void GearUpgradeUISetUpgrade(ref bool __runOriginal, GearUpgradeUI __instance, ref UpgradeInstance upgrade)
     {
         __runOriginal = true;
 
         try
         {
-            //If the upgrade is equipped
+            ref RarityData rarity = ref Global.GetRarity(upgrade.Upgrade.Rarity);
+            Color darkerRarityColor = Color.LerpUnclamped(rarity.color, rarity.backgroundColor, 0.25f);
+
+            // If upgrade equipped
             if (PlayerData.GetGearData(__instance.transform.GetComponentInParent<GearDetailsWindow>().UpgradablePrefab).IsUpgradeEquipped(upgrade))
             {
-                TryCreateImage(__instance.transform);
+                __instance.rarityText.color = rarity.backgroundColor;
+                __instance.rarityText.outlineColor = rarity.backgroundColor;
+                __instance.rarityText.outlineWidth = 0.15f;
+                __instance.nameText.color = rarity.backgroundColor;
+                __instance.nameText.outlineColor = rarity.backgroundColor;
+                __instance.nameText.outlineWidth = 0.15f;
+                __instance.button.SetHoverColor(Color.LerpUnclamped(rarity.color, rarity.backgroundColor, 0.3f));
+                __instance.button.SetClickColor(darkerRarityColor, setGraphicComponentsOnThisObject: false);
+                __instance.button.SetDefaultColor(rarity.color);
+                __instance.button.mainGraphic.material = upgrade.IsTurbocharged ? Global.Instance.UITurbochargedMat : null;
+                __instance.icon.color = !upgrade.Upgrade.IsSkin() ? rarity.backgroundColor : Global.Instance.WhiteUIColor;
+                __instance.icon.material = null;
+                __instance.outline.color = rarity.color;
             }
-            //If the upgrade is not equipped
             else
             {
-                TryHideImage(__instance.transform);
+                __instance.button.SetDefaultColor(rarity.backgroundColor);
+                __instance.icon.material = (upgrade.IsTurbocharged ? Global.Instance.UITurbochargedMat : null);
+                __instance.rarityText.color = rarity.color;
+                __instance.rarityText.outlineWidth = 0;
+                __instance.nameText.color = Global.Instance.WhiteUIColor;
+                __instance.nameText.outlineWidth = 0;
             }
         }
         catch (Exception e)
         {
-            Logger.LogWarning(e.Message);
+            Logger.LogWarning($"Method: SetUpgrade | {e.Message}");
         }
+    }
+
+    ///<summary>I have to overwrite this method because the icon color is changed here</summary>
+    [HarmonyPatch(typeof(GearUpgradeUI), nameof(GearUpgradeUI.EnableGridView))]
+    [HarmonyPostfix]
+    public static void GearUpgradeUIEnableGridView(ref bool __runOriginal, GearUpgradeUI __instance)
+    {
+        __runOriginal = true;
+        __instance.SetUpgrade(__instance.Upgrade);
     }
 
     ///<summary>Happens when an upgrade is equipped</summary>
@@ -61,12 +90,15 @@ public class Plugin : BaseUnityPlugin
             {
                 if (gearUpgradeUI.Upgrade == upgrade)
                 {
-                    TryCreateImage(gearUpgradeUI.transform);
+                    gearUpgradeUI.SetUpgrade(upgrade);
                     return;
                 }
             }
         }
-        catch { }
+        catch (Exception e)
+        {
+            Logger.LogWarning($"Method: EquipUpgrade | {e.Message}");
+        }
     }
 
     ///<summary>Happens when an upgrade is unequipped</summary>
@@ -82,54 +114,15 @@ public class Plugin : BaseUnityPlugin
             {
                 if (gearUpgradeUI.Upgrade == upgrade)
                 {
-                    TryHideImage(gearUpgradeUI.transform);
+                    gearUpgradeUI.SetUpgrade(upgrade);
                     return;
                 }
             }
         }
-        catch { }
-    }
-
-    ///<summary>Creates an image that makes the upgrade icon darker</summary>
-    static void TryCreateImage(Transform transform)
-    {
-        //If there is already an image, simply re enable it
-        if (GetModImageObj(transform).TryGetComponent(out Image image))
+        catch (Exception e)
         {
-            image.enabled = true;
-            return;
+            Logger.LogWarning($"Method: UnequipUpgrade | {e.Message}");
         }
-
-        // If there is no image, create one
-        image = Instantiate(new GameObject().AddComponent<Image>(), transform);
-        image.gameObject.name = pluginImageName;
-        image.rectTransform.anchoredPosition = Vector2.zero;
-        image.rectTransform.anchorMin = Vector2.zero;
-        image.rectTransform.anchorMax = Vector2.one;
-        image.rectTransform.sizeDelta = Vector2.zero;
-        image.raycastTarget = false;
-        image.color = new Color(0, 0, 0, 0.95f);
-        image.enabled = true;
     }
 
-    ///<summary>Disables the image that makes the upgrade icon darker</summary>
-    static void TryHideImage(Transform transform)
-    {
-        // If there is no image, do nothing
-        if (!GetModImageObj(transform).TryGetComponent(out Image image))
-            return;
-
-        // If there is an image, disable it
-        image.enabled = false;
-    }
-
-    /// <summary>Finds the child object containing the image created by this plugin</summary>
-    static GameObject GetModImageObj(Transform transform)
-    {
-        try
-        {
-            return transform.Find(pluginImageName).gameObject;
-        }
-        catch { return new GameObject(); }
-    }
 }

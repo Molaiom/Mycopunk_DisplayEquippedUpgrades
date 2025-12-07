@@ -64,4 +64,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="UnityEngine.UI" Publicize="true">
+      <HintPath>D:\Steam\steamapps\common\Mycopunk\Mycopunk_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
