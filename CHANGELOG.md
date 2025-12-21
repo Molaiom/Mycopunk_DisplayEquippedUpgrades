@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 (2025-12-20)
+
+* Updated to work in the new Ouroboros mode
+
+
+
 ## 1.1.0 (2025-12-07)
 
 ### Features
